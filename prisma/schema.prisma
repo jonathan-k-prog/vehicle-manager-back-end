@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum State {
+  new
+  refurbished
+  used
+  broken
+  scrapped
+  maintenance
+}
+
+model Warehouse {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  vehicles Vehicle[]
+  parts    Part[]
+}
+
+model Brand {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  partModels    PartModel[]
+  vehicleModels VehicleModel[]
+}
+
+model Vehicle {
+  id           Int    @id @default(autoincrement())
+  serialNumber String
+  code         String @unique
+
+  vehicleModel   VehicleModel @relation(fields: [vehicleModelId], references: [id])
+  vehicleModelId Int
+
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  warehouseId Int
+
+  parts Part[]
+}
+
+model VehicleModel {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  brand   Brand @relation(fields: [brandId], references: [id])
+  brandId Int
+
+  vehciles Vehicle[]
+}
+
+model Part {
+  id    Int   @id @default(autoincrement())
+  state State
+
+  vehicle   Vehicle? @relation(fields: [vehicleId], references: [id])
+  vehicleId Int?
+
+  partType   PartType @relation(fields: [partTypeId], references: [id])
+  partTypeId Int
+
+  partModel   PartModel? @relation(fields: [partModelId], references: [id])
+  partModelId Int?
+
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+  warehouseId Int?
+}
+
+model PartType {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  parts     Part[]
+  PartModel PartModel[]
+}
+
+model PartModel {
+  id   Int    @id @default(autoincrement())
+  name String
+  code String @unique
+
+  brand      Brand    @relation(fields: [brandId], references: [id])
+  brandId    Int
+  partType   PartType @relation(fields: [partTypeId], references: [id])
+  partTypeId Int
+
+  parts Part[]
+}
